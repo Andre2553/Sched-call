@@ -1,5 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Heading, Text, TextInput } from "@ignite-ui/react";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Container, Form, FormAnnotation, Header } from "./styles";
@@ -20,10 +22,18 @@ export default function Register() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerForm),
   });
+
+  const router = useRouter();
+  useEffect(() => {
+    if (router.query.username) {
+      setValue("username", String(router.query.username));
+    }
+  }, [router.query?.username, setValue]);
 
   async function handleRegister(data: RegisterFormData) {
     console.log(data);
