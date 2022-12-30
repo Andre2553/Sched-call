@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { api } from "../api/axios";
 import { Container, Form, FormAnnotation, Header } from "./styles";
 
 const registerForm = z.object({
@@ -36,7 +37,14 @@ export default function Register() {
   }, [router.query?.username, setValue]);
 
   async function handleRegister(data: RegisterFormData) {
-    console.log(data);
+    try {
+      await api.post("/users", {
+        username: data.username,
+        name: data.name,
+      });
+    } catch (err) {
+      console.log(err);
+    }
   }
   return (
     <Container>
