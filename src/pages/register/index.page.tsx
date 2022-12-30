@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Heading, Text, TextInput } from "@ignite-ui/react";
 import { useRouter } from "next/router";
+import { ArrowRight } from "phosphor-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -42,6 +43,7 @@ export default function Register() {
         username: data.username,
         name: data.name,
       });
+      await router.push(`/register/connect-calendar?`);
     } catch (err) {
       console.log(err);
     }
@@ -73,6 +75,7 @@ export default function Register() {
         </label>
         <Button type="submit" disabled={isSubmitting}>
           Continue
+          <ArrowRight />
         </Button>
       </Form>
     </Container>
