@@ -9,7 +9,9 @@
       {
         "endOfLine": "auto"
       }
-    ]
+    ],
+    "@typescript-eslint/camelcase": "off",
+    "camelcase": "off"
   }
   
 }

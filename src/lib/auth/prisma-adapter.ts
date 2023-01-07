@@ -33,8 +33,48 @@ export function PrismaAdapter(): Adapter {
         avatar_url: user.avatar_url!,
       };
     },
-    async getUserByAccount({ providerAccountId, provider }) {},
-    async updateUser(user) {},
+    async getUserByAccount({ providerAccountId, provider }) {
+      const { user } = await prisma.account.findUniqueOrThrow({
+        where: {
+          provider_provider_account_id: {
+            provider_account_id: providerAccountId,
+            provider,
+          },
+        },
+        include: {
+          user: true,
+        },
+      });
+      return {
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        email: user.email!,
+        emailVerified: null,
+        avatar_url: user.avatar_url!,
+      };
+    },
+    async updateUser(user) {
+      const prismaUser = await prisma.user.update({
+        where: {
+          id: user.id!,
+        },
+        data: {
+          name: user.name,
+          email: user.email,
+          avatar_url: user.avatar_url,
+        },
+      });
+
+      return {
+        id: prismaUser.id,
+        name: prismaUser.name,
+        username: prismaUser.username,
+        email: prismaUser.email!,
+        emailVerified: null,
+        avatar_url: prismaUser.avatar_url!,
+      };
+    },
     async deleteUser(userId) {},
     async linkAccount(account) {},
     async unlinkAccount({ providerAccountId, provider }) {},
