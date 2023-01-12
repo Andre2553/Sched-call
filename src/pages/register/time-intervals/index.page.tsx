@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Checkbox, Heading, Text, TextInput } from "@ignite-ui/react";
 import { ArrowRight } from "phosphor-react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
@@ -21,7 +22,7 @@ const timeIntervalsFormSchema = z.object({
   intervals: z
     .array(
       z.object({
-        weekDay: z.number().int().min(0).max(6),
+        weekDay: z.number().min(0).max(6),
         enabled: z.boolean(),
         startTime: z.string(),
         endTime: z.string(),
@@ -30,7 +31,7 @@ const timeIntervalsFormSchema = z.object({
     .length(7)
     .transform((intervals) => intervals.filter((interval) => interval.enabled))
     .refine((intervals) => intervals.length > 0, {
-      message: "You must select at least one interval",
+      message: "Você precisa selecionar pelo menos um dia da semana",
     })
     .transform((intervals) => {
       return intervals.map((interval) => {
@@ -48,7 +49,10 @@ const timeIntervalsFormSchema = z.object({
             interval.endTimeInMinutes - 60 >= interval.startTimeInMinutes
         );
       },
-      { message: "The minimum interval is 1 hour" }
+      {
+        message:
+          "O horário de término deve ser pelo menos 1h distante do início.",
+      }
     ),
 });
 
@@ -62,6 +66,7 @@ export default function TimeIntervals() {
     watch,
     formState: { isSubmitting, errors },
   } = useForm<TimeIntervalsFormInput>({
+    resolver: zodResolver(timeIntervalsFormSchema),
     defaultValues: {
       intervals: [
         { weekDay: 0, enabled: false, startTime: "08:00", endTime: "18:00" },
@@ -82,6 +87,7 @@ export default function TimeIntervals() {
   const intervals = watch("intervals");
   async function handleSetTimeIntervals(data: any) {
     const { intervals } = data as TimeIntervalsFormOutput;
+    console.log(intervals);
     await api.post("users/time-intervals", { intervals });
   }
   return (
