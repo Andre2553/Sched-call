@@ -7,6 +7,7 @@ import { getWeekDays } from "../../../utils/get-week-days";
 // import { api } from "../api/axios";
 import { Container, Header } from "../styles";
 import {
+  FormError,
   IntervalBox,
   IntervalDay,
   IntervalInputs,
@@ -14,8 +15,24 @@ import {
   IntervalsContainer,
 } from "./styles";
 
-const timeIntervalsFormSchema = z.object({});
+const timeIntervalsFormSchema = z.object({
+  intervals: z
+    .array(
+      z.object({
+        weekDay: z.number().int().min(0).max(6),
+        enabled: z.boolean(),
+        startTime: z.string(),
+        endTime: z.string(),
+      })
+    )
+    .length(7)
+    .transform((intervals) => intervals.filter((interval) => interval.enabled))
+    .refine((intervals) => intervals.length > 0, {
+      message: "You must select at least one interval",
+    }),
+});
 
+type TimeIntervalsFormData = z.infer<typeof timeIntervalsFormSchema>;
 export default function TimeIntervals() {
   const {
     register,
@@ -42,7 +59,7 @@ export default function TimeIntervals() {
     name: "intervals",
   });
   const intervals = watch("intervals");
-  async function handleSetTimeIntervals() {}
+  async function handleSetTimeIntervals(data: TimeIntervalsFormData) {}
   return (
     <Container>
       <Header>
@@ -92,7 +109,10 @@ export default function TimeIntervals() {
             );
           })}
         </IntervalsContainer>
-        <Button type="submit">
+        {errors.intervals && (
+          <FormError size="sm">{errors.intervals.message}</FormError>
+        )}
+        <Button type="submit" disabled={isSubmitting}>
           Next Step <ArrowRight />
         </Button>
       </IntervalBox>
