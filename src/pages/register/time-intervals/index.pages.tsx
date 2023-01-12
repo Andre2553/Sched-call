@@ -2,6 +2,7 @@ import { Button, Checkbox, Heading, Text, TextInput } from "@ignite-ui/react";
 import { ArrowRight } from "phosphor-react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
+import { convertTimeStringToMinutes } from "../../../utils/convert-time-string-to-minutes";
 import { getWeekDays } from "../../../utils/get-week-days";
 // import { useRouter } from "next/router";
 // import { api } from "../api/axios";
@@ -29,10 +30,29 @@ const timeIntervalsFormSchema = z.object({
     .transform((intervals) => intervals.filter((interval) => interval.enabled))
     .refine((intervals) => intervals.length > 0, {
       message: "You must select at least one interval",
-    }),
+    })
+    .transform((intervals) => {
+      return intervals.map((interval) => {
+        return {
+          weekDay: interval.weekDay,
+          startTimeInMinutes: convertTimeStringToMinutes(interval.startTime),
+          endTimeInMinutes: convertTimeStringToMinutes(interval.endTime),
+        };
+      });
+    })
+    .refine(
+      (intervals) => {
+        return intervals.every(
+          (interval) =>
+            interval.endTimeInMinutes - 60 >= interval.startTimeInMinutes
+        );
+      },
+      { message: "The minimum interval is 1 hour" }
+    ),
 });
 
-type TimeIntervalsFormData = z.infer<typeof timeIntervalsFormSchema>;
+type TimeIntervalsFormInput = z.input<typeof timeIntervalsFormSchema>;
+type TimeIntervalsFormOutput = z.output<typeof timeIntervalsFormSchema>;
 export default function TimeIntervals() {
   const {
     register,
@@ -40,7 +60,7 @@ export default function TimeIntervals() {
     control,
     watch,
     formState: { isSubmitting, errors },
-  } = useForm({
+  } = useForm<TimeIntervalsFormInput>({
     defaultValues: {
       intervals: [
         { weekDay: 0, enabled: false, startTime: "08:00", endTime: "18:00" },
@@ -59,7 +79,10 @@ export default function TimeIntervals() {
     name: "intervals",
   });
   const intervals = watch("intervals");
-  async function handleSetTimeIntervals(data: TimeIntervalsFormData) {}
+  async function handleSetTimeIntervals(data: any) {
+    const formData = data as TimeIntervalsFormOutput;
+    console.log(formData);
+  }
   return (
     <Container>
       <Header>
